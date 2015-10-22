@@ -34,5 +34,12 @@ f = lambda x : (datetime.strptime(x,'%Y-%m-%d') - dayStart).days
 
 df["NumbDays"] = df["Date"].map(f)
 
+f = lambda x : int(x[5:7])
+
+
+#add the month in the feature: 
+df['Month'] = df['Date'].map(f)
+
+
 #Export the data with the added features
 df.to_csv("Data/train++.csv",header=True)
