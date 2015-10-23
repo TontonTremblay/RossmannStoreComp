@@ -4,7 +4,7 @@
 import pandas as pd 
 import seaborn as sns 
 import numpy as np 
-from datetime import datetime
+import datetime
 import matplotlib.pyplot as plt
 import os
 
@@ -24,8 +24,8 @@ df = df.loc[df['Store'] == storeID]
 
 
 #Find the test data set. 2013/01/01 is the day 0 
-startDay = datetime.strptime('2013-01-01',"%Y-%m-%d")
-endDay = (datetime.strptime('2015-07-01',"%Y-%m-%d") - datetime.strptime('2013-01-01',"%Y-%m-%d")).days
+startDay = datetime.datetime.strptime('2013-01-01',"%Y-%m-%d")
+endDay = (datetime.datetime.strptime('2015-07-01',"%Y-%m-%d") - datetime.datetime.strptime('2013-01-01',"%Y-%m-%d")).days
 
 
 #Want to test on the last available month. This is closer 
@@ -72,7 +72,8 @@ if not os.path.exists(directory):
 
 #Check how the predictor performs using a nice plot. 
 
-# f = plt.figure()
+fig = plt.figure()
+ax = fig.add_subplot(111)
 
 plt.scatter(testData['NumbDays'].values,p,color='b')
 plt.plot(testData['NumbDays'].values,p,color='b',alpha = 0.9,label='predict')
@@ -84,17 +85,22 @@ plt.plot(testData['NumbDays'].values,ytest,color='g',alpha = 0.9,label='real')
 x1,x2,y1,y2 = plt.axis()
 
 
+
+
 plt.axis((endDay-1,x2,0,y2))
 plt.title('id: ' + str(storeID) +  ' score: '+ str(score))
 
 #Add the legend as well 
+plt.legend()
 
 # check out how to change for the dates. 
-# values = plt.axes.xaxis.get_majorticklocs()
-# labels2 = []
-# for v in values:
-#     labels2.append(time.strftime('%M:%S',time.gmtime(v)))
-# plt.set_xticklabels(labels2)
+values = ax.xaxis.get_majorticklocs()
+labels2 = []
+for v in values:
+    end_date = startDay + datetime.timedelta(days=v)
+    labels2.append(end_date.strftime("%d-%m-%y"))
+    
+ax.set_xticklabels(labels2)
 
 # plt.show()
 plt.savefig(directory+"performance.png")
@@ -102,12 +108,28 @@ plt.clf()
 
 
 #Producing a plot of the sales over the data set.  
-g = sns.lmplot(x="NumbDays", y="Sales",data = df, size = 9,order=1)
+#Find the data points with 
+dft = df.loc[df['Sales']>0]
+ax = sns.lmplot(x="NumbDays", y="Sales",data = dft, size = 9,order=1).ax
+dft = df.loc[df['Promo']==1]
+
+plt.scatter(dft['NumbDays'].values,dft['Sales'].values,color='g',s=25,marker='s')
+
 
 x1,x2,y1,y2 = plt.axis()
 plt.axis((0,x2,-1,max(df['Sales'])))
 
+values = ax.xaxis.get_majorticklocs()
+labels2 = []
+for v in values:
+    end_date = startDay + datetime.timedelta(days=v)
+    labels2.append(end_date.strftime("%d-%m-%y"))
+    
+ax.set_xticklabels(labels2)
+
+
 plt.savefig(directory+"SalesData.png")
+
 plt.clf()
 
 #plot of the sales as a function of the day of the week
