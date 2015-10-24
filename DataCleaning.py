@@ -16,7 +16,13 @@ df = pd.read_csv("Data/train.csv")
 #Add the column location
 dfLoc = pd.read_csv("Data/store_states.csv")
 
-print dfLoc
+dftest = pd.read_csv("Data/test.csv")
+
+print df
+
+print dftest
+
+
 
 f = lambda x : dfLoc[dfLoc['Store']==x].values[0][1]
 
@@ -26,6 +32,17 @@ f = lambda x : dfLoc[dfLoc['Store']==x].values[0][1]
 
 # df['StoreLoc'] = df['Store'].map(f)
 
+
+#Convert the a to 1
+def f(x):
+	if x is 0:
+		return 0
+	else:
+		return 1 
+
+df['StateHoliday'] = df['StateHoliday'].map(f)
+
+
 #Convert the date to int of days. Year 2013-01-01 is the int 0. 
 dayStart = datetime.strptime('2013-01-01',"%Y-%m-%d")
 
@@ -33,6 +50,10 @@ f = lambda x : (datetime.strptime(x,'%Y-%m-%d') - dayStart).days
 
 
 df["NumbDays"] = df["Date"].map(f)
+
+
+
+
 
 f = lambda x : int(x[5:7])
 
