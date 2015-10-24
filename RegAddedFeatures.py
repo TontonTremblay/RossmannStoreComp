@@ -1,6 +1,9 @@
 #This script does a simple linear regression for 
 #a single store. The test is using the month of July
 
+#This approach scored: 0.66700 :S not better than simply using 
+#the median
+
 import pandas as pd 
 import seaborn as sns 
 import numpy as np 
@@ -11,7 +14,8 @@ import os
 from sklearn import linear_model
 from sklearn import svm
 from sklearn.ensemble import RandomForestRegressor
-
+import sklearn
+import math
 
 def main():
     #Set the colour and style
@@ -20,7 +24,7 @@ def main():
 
     #Test for one instance. 
     global testing
-    testing = False
+    testing = True
 
 
     df = pd.read_csv("Data/train++.csv")
@@ -39,7 +43,7 @@ def main():
         #353 is pretty hard to fit with simple models. 
         #112 linear regression model is really good. 
 
-        storeID = 579
+        storeID = 545
 
         df = df.loc[df['Store'] == storeID]
 
@@ -71,12 +75,17 @@ def main():
         #add the month in the feature: 
         testdf['Month'] = testdf['Date'].map(f)
         
+
+        testdf['StateHoliday'] = testdf['StateHoliday'].map(fmap)
+
+
         # testdf = UpdateDataSet(testdf,df)
 
         #Test for each store and fill in the values. 
         storeIds = df['Store'].unique()
         
-        for i in storeIds:
+        for i in range(42,len(storeIds)):
+            i = storeIds[i]
             r = []
             dft = df.loc[df['Store'] == i]
             dftTest = testdf.loc[df['Store'] == i] 
@@ -95,9 +104,14 @@ def main():
             r = sorted(r)
             r = pd.DataFrame(np.array(r),columns=['Id','Sales'])
             r.to_csv("Output/predictions/predict"+str(i)+".csv",index=False,header=True)
-            break
+            # break
         #Save the output
 
+def fmap(x):
+    if x is 0:
+        return 0
+    else:
+        return 1 
 
 
 def UpdateDataSet(df,dfData=None):
@@ -176,9 +190,20 @@ def trainRegressorPredict(trainData,testData,features):
 
     p = clf.predict(xtest)
 
-
+    def RootMeanSquaredError(ytest,y):
+        s = 0
+        for i in range(len(y)):
+            yi = ytest[i]
+            yh = y[i]
+            if yi >0:
+                v = (yi-yh)/yi
+                v*=v
+                s+=v
+        return math.sqrt( (1.0/len(ytest))*s)
 
     if testing:
+        #plot and check what is going on!?!?!?
+
         score = clf.score(xtest,ytest)
 
         for i in range( len (clf.feature_importances_)):
@@ -186,8 +211,24 @@ def trainRegressorPredict(trainData,testData,features):
         fig = plt.figure()
         ax = fig.add_subplot(111)
 
+        #Simple predictor
+        train = trainData.loc[trainData['Sales']>0]
+
+        meansStores = train.groupby(['DayOfWeek','Promo'])['Sales'].mean()
+        meansStores = meansStores.reset_index()
+
+        resMean = pd.merge(testData,meansStores, on = ['DayOfWeek','Promo'],how ='left')
+        resMean.fillna(train.Sales.mean(),inplace=True)
+
+        plt.scatter(testData['NumbDays'].values,resMean['Sales_y'],color='y',alpha=0.8)
+        plt.plot(testData['NumbDays'].values,resMean['Sales_y'],color='y',alpha=0.8,\
+            label='mean:' + \
+            str("%.3f" % RootMeanSquaredError(ytest,resMean['Sales_y'].values)))
+
         plt.scatter(testData['NumbDays'].values,p,color='b')
-        plt.plot(testData['NumbDays'].values,p,color='b',alpha = 0.9,label='pre')
+        plt.plot(testData['NumbDays'].values,p,color='b',alpha = 0.9,\
+            label='prec:' + \
+            str("%.3f" % RootMeanSquaredError(ytest,p)))
 
         plt.scatter(testData['NumbDays'].values,ytest,color='g')
         plt.plot(testData['NumbDays'].values,ytest,color='g',alpha = 0.9,label='real')
@@ -202,10 +243,10 @@ def trainRegressorPredict(trainData,testData,features):
 
 
         plt.axis((endDay-1,x2,0,y2))
-        plt.title('id: ' + str(trainData['Store'].unique()[0]) +  ' score: '+ str(score))
+        plt.title('id: ' + str(trainData['Store'].unique()[0]))
 
         #Add the legend as well 
-        plt.legend()
+        plt.legend(loc=4)
 
         # check out how to change for the dates. 
         values = ax.xaxis.get_majorticklocs()
@@ -213,10 +254,17 @@ def trainRegressorPredict(trainData,testData,features):
         for v in values:
             end_date = startDay + datetime.timedelta(days=v)
             labels2.append(end_date.strftime("%d-%m-%y"))
-            
+        
         ax.set_xticklabels(labels2)
 
+
+        print ""
+        print "mean predictor:", str("%.5f" % RootMeanSquaredError(ytest,resMean['Sales_y'].values))
+        print "test predictor:", str("%.5f" % RootMeanSquaredError(ytest,p))
         plt.show()
+
+
+
     return p
 
 

@@ -8,7 +8,7 @@ import pandas as pd
 #to make pretty plot
 import seaborn as sns
 from datetime import datetime
-
+import numpy as np
 
 df = pd.read_csv("Data/train.csv")
 
@@ -18,11 +18,11 @@ dfLoc = pd.read_csv("Data/store_states.csv")
 
 dftest = pd.read_csv("Data/test.csv")
 
-print df
 
-print dftest
+#find out missing information 
+# print np.unique(dftest.isnull().values)
 
-
+quit()
 
 f = lambda x : dfLoc[dfLoc['Store']==x].values[0][1]
 
@@ -60,6 +60,9 @@ f = lambda x : int(x[5:7])
 
 #add the month in the feature: 
 df['Month'] = df['Date'].map(f)
+
+
+
 
 
 #Export the data with the added features
