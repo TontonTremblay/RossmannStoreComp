@@ -183,9 +183,10 @@ def trainRegressorPredict(trainData,testData,features):
 
 
 
-    # clf = linear_model.Lasso(alpha = 1)
-    clf = linear_model.LinearRegression()
+    # clf = linear_model.Lasso(alpha = 50) 
+    # clf = linear_model.LinearRegression()
     clf = RandomForestRegressor()
+    # clf = sklearn.svm.LinearSVR(C=15)
     clf.fit(Xtrain,ytrain)
 
     p = clf.predict(xtest)
@@ -204,10 +205,9 @@ def trainRegressorPredict(trainData,testData,features):
     if testing:
         #plot and check what is going on!?!?!?
 
-        score = clf.score(xtest,ytest)
+        
 
-        for i in range( len (clf.feature_importances_)):
-            print features[i], ':', clf.feature_importances_[i]
+        
         fig = plt.figure()
         ax = fig.add_subplot(111)
 
@@ -257,6 +257,9 @@ def trainRegressorPredict(trainData,testData,features):
         
         ax.set_xticklabels(labels2)
 
+        #print some values/debugs
+        # for i in range( len (clf.feature_importances_)):
+        #     print features[i], ':', clf.feature_importances_[i]
 
         print ""
         print "mean predictor:", str("%.5f" % RootMeanSquaredError(ytest,resMean['Sales_y'].values))
