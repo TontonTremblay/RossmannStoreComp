@@ -15,4 +15,4 @@ test = pd.merge(test,meansStores, on = ['Store','DayOfWeek','Promo'],how ='left'
 test.fillna(train.Sales.mean(),inplace=True)
 
 
-test[['Id','Sales']].to_csv('output/base_prediction.csv',index=False)
+test[['Id','Sales']].to_csv('Output/base_prediction.csv',index=False)
