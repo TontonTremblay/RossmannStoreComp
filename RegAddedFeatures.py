@@ -30,13 +30,31 @@ def main():
     df = pd.read_csv("Data/train++.csv")
 
     #feature list (NOT UDPATED)v
-    #Store,DayOfWeek,Date,Sales,Customers,Open,Promo,StateHoliday,SchoolHoliday,StoreLoc,NumbDays
-    features = ['DayOfWeek','Open','Promo',"NumbDays",'Month','MeanMonthSale',\
-    "MaxMonthSale","MinMonthSale",'PeopleMeansMonth','PeopleMinMonth','PeopleMaxMonth',\
-    "PeopleMinDayOfWeek","PeopleMaxDayOfWeek","PeopleMeansDayOfWeek",\
-    'MeanDayOfWeekSale','MinDayOfWeekSale',"MaxDayOfWeekSale",'SchoolHoliday',"StateHoliday"]
+    '''
+    Store,DayOfWeek,Date,Sales,Customers,Open,Promo,StateHoliday,
+    SchoolHoliday,NumbDays,Month,Saleslog,MeanSalesDayOfWeek,
+    MeanSalesDayOfWeeklog,MinSalesDayWeek,MinSalesDayWeeklog,
+    MaxSalesDayWeek,MaxSalesDayWeeklog,MeanSalesPromoDayWeek,
+    MeanSalesPromoDayWeeklog,MinSalesPromoDayWeek,MinSalesPromoDayWeeklog,
+    MaxSalesPromoDayWeek,MaxSalesPromoDayWeeklog,MeanSalesPromoMonth,
+    MeanSalesPromoMonthlog,MinSalesPromoMonth,MinSalesPromoMonthlog,
+    MaxSalesPromoMonth,MaxSalesPromoMonthlog,StoreLoc
+    '''
+    features = ['DayOfWeek','Open','Promo',"NumbDays",'Month',\
+        'SchoolHoliday',"StateHoliday","MeanSalesDayOfWeeklog",
+        "MinSalesDayWeeklog","MaxSalesDayWeeklog","MeanSalesPromoDayWeeklog",
+        "MinSalesPromoDayWeeklog", "MaxSalesPromoDayWeeklog",
+        "MeanSalesPromoMonthlog","MinSalesPromoMonthlog",
+        "MaxSalesPromoMonthlog"]
 
+    print df['MeanSalesPromoDayWeeklog'].describe()
 
+    # features = ['DayOfWeek','Open','Promo',"NumbDays",'Month',\
+    #     'SchoolHoliday',"StateHoliday","MeanSalesDayOfWeek",
+    #     "MinSalesDayWeek","MaxSalesDayWeek","MeanSalesPromoDayWeek",
+    #     "MinSalesPromoDayWeek", "MaxSalesPromoDayWeek",
+    #     "MeanSalesPromoMonth","MinSalesPromoMonth",
+    #     "MaxSalesPromoMonth"]
 
     if testing:
         #Only keep the one with specific id 
@@ -47,8 +65,7 @@ def main():
 
         df = df.loc[df['Store'] == storeID]
 
-        df = UpdateDataSet(df)
-
+        
         startDay = datetime.datetime.strptime('2013-01-01',"%Y-%m-%d")
         endDay = (datetime.datetime.strptime('2015-07-01',"%Y-%m-%d") - \
             datetime.datetime.strptime('2013-01-01',"%Y-%m-%d")).days
@@ -112,78 +129,6 @@ def fmap(x):
         return 0
     else:
         return 1 
-
-
-def UpdateDataSet(df,dfData=None):
-    if dfData is None:
-        dfData = df
-    #only keep the data with positive values
-    dfData = dfData[dfData['Sales']>0]
-
-
-    #Add the mean of the month in right now. 
-    fMonth = lambda x : values.loc[values['Month']== x].values[0][1]
-    fDayWeek = lambda x : values.loc[values['DayOfWeek']== x].values[0][1]
-
-    values =  (dfData.groupby(['Month'])['Sales'].mean()).reset_index()
-    df['MeanMonthSale'] = dfData['Month'].map(fMonth)
-    df['MeanMonthSale'].fillna(dfData.Sales.mean(),inplace=True)
-
-    values =  (dfData.groupby(['DayOfWeek'])['Sales'].mean()).reset_index()
-    df['MeanDayOfWeekSale'] = dfData['DayOfWeek'].map(fDayWeek)
-    df['MeanDayOfWeekSale'].fillna(dfData.Sales.mean(),inplace=True)
-
-    #Add the max sale of the month
-    values =  (dfData.groupby(['Month'])['Sales'].max()).reset_index()
-    df['MaxMonthSale'] = dfData['Month'].map(fMonth)
-    df['MaxMonthSale'].fillna(dfData.Sales.max(),inplace=True)
-
-    values =  (dfData.groupby(['DayOfWeek'])['Sales'].max()).reset_index()
-    df['MaxDayOfWeekSale'] = dfData['DayOfWeek'].map(fDayWeek)
-    df['MaxDayOfWeekSale'].fillna(dfData.Sales.max(),inplace=True)
-
-
-    #add min sale of the months
-    #Add the max sale of the month
-    values =  (dfData.groupby(['Month'])['Sales'].min()).reset_index()
-    df['MinMonthSale'] = dfData['Month'].map(fMonth)
-    df['MinMonthSale'].fillna(dfData.Sales.min(),inplace=True)
-
-    values =  (dfData.groupby(['DayOfWeek'])['Sales'].min()).reset_index()
-    df['MinDayOfWeekSale'] = dfData['DayOfWeek'].map(fDayWeek)
-    df['MinDayOfWeekSale'].fillna(dfData.Sales.min(),inplace=True)
-
-    #Add the mean of people coming to the store on this month
-
-    values =  (dfData.groupby(['Month'])['Customers'].mean()).reset_index()
-    df['PeopleMeansMonth'] = dfData['Month'].map(fMonth)
-    df['PeopleMeansMonth'].fillna(dfData.Sales.mean(),inplace=True)
-
-    values =  (dfData.groupby(['DayOfWeek'])['Customers'].mean()).reset_index()
-    df['PeopleMeansDayOfWeek'] = dfData['DayOfWeek'].map(fDayWeek)
-    df['PeopleMeansDayOfWeek'].fillna(dfData.Sales.mean(),inplace=True)
-
-    #add min and max of people
-    values =  (dfData.groupby(['Month'])['Customers'].min()).reset_index()
-    df['PeopleMinMonth'] = dfData['Month'].map(fMonth)
-    df['PeopleMinMonth'].fillna(dfData.Sales.min(),inplace=True)
-
-    values =  (dfData.groupby(['DayOfWeek'])['Customers'].min()).reset_index()
-    df['PeopleMinDayOfWeek'] = dfData['DayOfWeek'].map(fDayWeek)
-    df['PeopleMinDayOfWeek'].fillna(dfData.Sales.min(),inplace=True)
-
-
-    values =  (dfData.groupby(['Month'])['Customers'].max()).reset_index()
-    df['PeopleMaxMonth'] = dfData['Month'].map(fMonth)
-    df['PeopleMaxMonth'].fillna(dfData.Sales.max(),inplace=True)
-
-    values =  (dfData.groupby(['DayOfWeek'])['Customers'].max()).reset_index()
-    df['PeopleMaxDayOfWeek'] = dfData['DayOfWeek'].map(fDayWeek)
-    df['PeopleMaxDayOfWeek'].fillna(dfData.Sales.max(),inplace=True)
-
-
-    return df
-
 
 
 
@@ -275,9 +220,9 @@ def trainRegressorPredict(trainData,testData,features):
         
         ax.set_xticklabels(labels2)
 
-        #print some values/debugs
-        # for i in range( len (clf.feature_importances_)):
-        #     print features[i], ':', clf.feature_importances_[i]
+        # print some values/debugs
+        for i in range( len (clf.feature_importances_)):
+            print features[i], ':', clf.feature_importances_[i]
 
         print ""
         print "mean predictor:", str("%.5f" % RootMeanSquaredError(ytest,resMean['Sales_y'].values))

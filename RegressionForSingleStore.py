@@ -60,7 +60,7 @@ clf.fit(Xtrain,ytrain)
 p = clf.predict(xtest)
 
 score = clf.score(xtest,ytest)
-
+print score
 
 #Produces a couple figures to save to Output/+idstore
 
@@ -102,8 +102,9 @@ for v in values:
     
 ax.set_xticklabels(labels2)
 
-# plt.show()
-plt.savefig(directory+"performance.png")
+plt.show()
+quit()
+# plt.savefig(directory+"performance.png")
 plt.clf()
 
 
