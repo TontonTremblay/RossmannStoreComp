@@ -30,6 +30,7 @@ def main():
     df = pd.read_csv("Data/train++.csv")
 
     #feature list (NOT UDPATED)v
+
     '''
     Store,DayOfWeek,Date,Sales,Customers,Open,Promo,StateHoliday,
     SchoolHoliday,NumbDays,Month,Saleslog,MeanSalesDayOfWeek,
@@ -56,6 +57,7 @@ def main():
     #     "MeanSalesPromoMonth","MinSalesPromoMonth",
     #     "MaxSalesPromoMonth"]
 
+
     if testing:
         #Only keep the one with specific id 
         #353 is pretty hard to fit with simple models. 
@@ -65,7 +67,7 @@ def main():
 
         df = df.loc[df['Store'] == storeID]
 
-        
+
         startDay = datetime.datetime.strptime('2013-01-01',"%Y-%m-%d")
         endDay = (datetime.datetime.strptime('2015-07-01',"%Y-%m-%d") - \
             datetime.datetime.strptime('2013-01-01',"%Y-%m-%d")).days
@@ -223,6 +225,7 @@ def trainRegressorPredict(trainData,testData,features):
         # print some values/debugs
         for i in range( len (clf.feature_importances_)):
             print features[i], ':', clf.feature_importances_[i]
+
 
         print ""
         print "mean predictor:", str("%.5f" % RootMeanSquaredError(ytest,resMean['Sales_y'].values))

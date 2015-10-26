@@ -20,12 +20,18 @@ dfLoc = pd.read_csv("Data/store_states.csv")
 dfStore = pd.read_csv('Data/store.csv')
 dftest = pd.read_csv("Data/test.csv")
 
+#find out missing information 
+# print np.unique(dftest.isnull().values)
+f = lambda x : dfLoc[dfLoc['Store']==x].values[0][1]
+
+# print f(10)
+
+# quit()
+
+# df['StoreLoc'] = df['Store'].map(f)
 
 
-
-
-
-#Convert the a to 1 in StateHoliday
+#Convert the a to 1
 def f(x):
 	if x is 0:
 		return 0
@@ -138,9 +144,6 @@ maxsSalesStores = None
 
 
 
-#Update the store location
-f = lambda x : dfLoc[dfLoc['Store']==x].values[0][1]
-df['StoreLoc'] = df['Store'].map(f)
 
 
 
