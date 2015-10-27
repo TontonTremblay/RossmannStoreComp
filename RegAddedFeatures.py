@@ -48,7 +48,7 @@ def main():
         "MeanSalesPromoMonthlog","MinSalesPromoMonthlog",
         "MaxSalesPromoMonthlog"]
 
-    print df['MeanSalesPromoDayWeeklog'].describe()
+
 
     # features = ['DayOfWeek','Open','Promo',"NumbDays",'Month',\
     #     'SchoolHoliday',"StateHoliday","MeanSalesDayOfWeek",
@@ -63,7 +63,7 @@ def main():
         #353 is pretty hard to fit with simple models. 
         #112 linear regression model is really good. 
 
-        storeID = 545
+        storeID = 1
 
         df = df.loc[df['Store'] == storeID]
 
@@ -79,26 +79,10 @@ def main():
 
     else:
         #This is testing for everyone 
-        testdf = pd.read_csv('Data/test.csv')
+        testdf = pd.read_csv('Data/test++.csv')
 
         #add numdays to dataset
-        dayStart = datetime.datetime.strptime('2013-01-01',"%Y-%m-%d")
 
-        f = lambda x : (datetime.datetime.strptime(x,'%Y-%m-%d') - dayStart).days
-
-        testdf["NumbDays"] = testdf["Date"].map(f)
-
-        #add the month to the DataSet
-        f = lambda x : int(x[5:7])
-
-        #add the month in the feature: 
-        testdf['Month'] = testdf['Date'].map(f)
-        
-
-        testdf['StateHoliday'] = testdf['StateHoliday'].map(fmap)
-
-
-        # testdf = UpdateDataSet(testdf,df)
 
         #Test for each store and fill in the values. 
         storeIds = df['Store'].unique()
@@ -108,9 +92,7 @@ def main():
             r = []
             dft = df.loc[df['Store'] == i]
             dftTest = testdf.loc[df['Store'] == i] 
-            dft = UpdateDataSet(dft)
-            dftTest = UpdateDataSet(dftTest,dft)
-            
+            # print dftTest
             p = trainRegressorPredict(dft,dftTest,features)
 
             #Put the p at the right place with the right id. 
@@ -123,6 +105,7 @@ def main():
             r = sorted(r)
             r = pd.DataFrame(np.array(r),columns=['Id','Sales'])
             r.to_csv("Output/predictions/predict"+str(i)+".csv",index=False,header=True)
+            # print i,
             # break
         #Save the output
 
