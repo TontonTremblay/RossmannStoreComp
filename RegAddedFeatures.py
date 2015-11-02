@@ -23,7 +23,8 @@ def main():
     pd.options.mode.chained_assignment = None
 
     #Test for one instance. 
-    global testing
+    global testing,contestOutput
+    contestOutput = False
     testing = True
 
 
@@ -39,7 +40,7 @@ def main():
     MeanSalesPromoDayWeeklog,MinSalesPromoDayWeek,MinSalesPromoDayWeeklog,
     MaxSalesPromoDayWeek,MaxSalesPromoDayWeeklog,MeanSalesPromoMonth,
     MeanSalesPromoMonthlog,MinSalesPromoMonth,MinSalesPromoMonthlog,
-    MaxSalesPromoMonth,MaxSalesPromoMonthlog,StoreLoc
+    MaxSalesPromoMonth,MaxSalesPromoMonthlog
     '''
     features = ['DayOfWeek','Open','Promo',"NumbDays",'Month',\
         'SchoolHoliday',"StateHoliday","MeanSalesDayOfWeeklog",
@@ -63,7 +64,9 @@ def main():
         #353 is pretty hard to fit with simple models. 
         #112 linear regression model is really good. 
 
-        storeID = 1
+        #prior analysis to check: 292
+
+        storeID = 123
 
         df = df.loc[df['Store'] == storeID]
 
@@ -78,36 +81,58 @@ def main():
         trainRegressorPredict(trainData,testData,features)
 
     else:
-        #This is testing for everyone 
-        testdf = pd.read_csv('Data/test++.csv')
+        if contestOutput:
+            #This is testing for everyone 
+            testdf = pd.read_csv('Data/test++.csv')
 
-        #add numdays to dataset
+            #add numdays to dataset
 
 
-        #Test for each store and fill in the values. 
-        storeIds = df['Store'].unique()
-        
-        for i in range(42,len(storeIds)):
-            i = storeIds[i]
-            r = []
-            dft = df.loc[df['Store'] == i]
-            dftTest = testdf.loc[df['Store'] == i] 
-            # print dftTest
-            p = trainRegressorPredict(dft,dftTest,features)
-
-            #Put the p at the right place with the right id. 
-            c = 0
-            for j in dftTest['Id']:
-                r.append([j,p[c]])
-                c+=1
+            #Test for each store and fill in the values. 
+            storeIds = df['Store'].unique()
             
-            # break
-            r = sorted(r)
-            r = pd.DataFrame(np.array(r),columns=['Id','Sales'])
-            r.to_csv("Output/predictions/predict"+str(i)+".csv",index=False,header=True)
-            # print i,
-            # break
-        #Save the output
+            for i in range(0,len(storeIds)):
+                i = storeIds[i]
+                r = []
+                dft = df.loc[df['Store'] == i]
+                dftTest = testdf.loc[df['Store'] == i] 
+                # print dftTest
+                p = trainRegressorPredict(dft,dftTest,features)
+
+                #Put the p at the right place with the right id. 
+                c = 0
+                for j in dftTest['Id']:
+                    r.append([j,p[c]])
+                    c+=1
+                
+                # break
+                r = sorted(r)
+                r = pd.DataFrame(np.array(r),columns=['Id','Sales'])
+                r.to_csv("Output/predictions/predict"+str(i)+".csv",index=False,header=True)
+                # print i,
+                # break
+        else:
+            startDay = datetime.datetime.strptime('2013-01-01',"%Y-%m-%d")
+            endDay = (datetime.datetime.strptime('2015-07-01',"%Y-%m-%d") - \
+                datetime.datetime.strptime('2013-01-01',"%Y-%m-%d")).days
+            #Want to test on the last available month. This is closer 
+            #to how this model is going to be test on the competition
+            testData = df.loc[df['NumbDays']>=endDay]
+            trainData = df.loc[df['NumbDays']<endDay]
+
+            storeIds = df['Store'].unique()
+            results = []
+            for i in range(1,len(storeIds)):
+                dft = trainData.loc[trainData['Store'] == i]
+                dftTest = testData.loc[testData['Store'] == i] 
+
+                results.append([i,ErrorPerStore(dft,dftTest,features)])
+            # print np.array(results)
+            output = pd.DataFrame(np.array(results),columns=['Store','Score'])
+            print output.Score.describe()
+            output.to_csv('Output/julyScore.csv',index=False,header=True)
+            
+
 
 def fmap(x):
     if x is 0:
@@ -219,11 +244,40 @@ def trainRegressorPredict(trainData,testData,features):
 
     return p
 
+def ErrorPerStore(trainData,testData,features):
+
+    Xtrain = trainData[features].values
+    ytrain = trainData['Sales'].values
+
+    xtest = testData[features].values
+
+    ytest = testData['Sales'].values
 
 
 
 
 
+    # clf = linear_model.Lasso(alpha = 50) 
+    # clf = linear_model.LinearRegression()
+    clf = RandomForestRegressor()
+    # clf = sklearn.svm.LinearSVR(C=15)
+    clf.fit(Xtrain,ytrain)
+
+    p = clf.predict(xtest)
+
+    return RootMeanSquaredError(ytest,p)
+
+
+def RootMeanSquaredError(ytest,y):
+    s = 0
+    for i in range(len(y)):
+        yi = ytest[i]
+        yh = y[i]
+        if yi >0:
+            v = (yi-yh)/yi
+            v*=v
+            s+=v
+    return math.sqrt( (1.0/len(ytest))*s)
 if __name__ == "__main__":
     main()
 
